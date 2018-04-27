@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python2.7 -u
 from __future__ import print_function
 
 import os
@@ -10,6 +10,9 @@ import socket
 from argparse import ArgumentParser
 
 from common_utils.s3_utils import download_file,upload_folder,get_size,get_aws_session
+
+WORKDIR = '/scratch'
+PVCFDIR = WORKDIR + '/pVCF_genomicsDB'
 
 def fixResolv():
     """
@@ -51,6 +54,9 @@ def main():
 
     args = argparser.parse_args()
     print(args)
+    if os.getenv('DEBUG'):
+        print('Entering sleep')
+        time.sleep(9999)
 
     print("Downloading loader file")
     loader_path = download_file(args.loader_s3_path, '/')
@@ -81,15 +87,15 @@ def main():
        text_file.write("{0}".format(total_size))
 
     # Wait for EBS to appear
-    while not os.path.isdir('/scratch'):
+    while not os.path.isdir(WORKDIR):
        time.sleep(5)
 
     # Wait for mount verification
-    while not os.path.ismount('/scratch'):
+    while not os.path.ismount(WORKDIR):
        time.sleep(1)
 
-    if not os.path.exists('/scratch/pVCF_genomicsDB'):
-       os.mkdir('/scratch/pVCF_genomicsDB')
+    if not os.path.exists(PVCFDIR):
+       os.mkdir(PVCFDIR)
 
     print ("Running vcf2tiledb_basic")
     local_stats_path = run_vcf2tiledb_basic(
@@ -97,7 +103,7 @@ def main():
                            loader_path)
 
     print("Uploading to %s" % (args.results_s3_path) )
-    upload_folder(args.results_s3_path, '/scratch/pVCF_genomicsDB')
+    upload_folder(args.results_s3_path, PVCFDIR)
 
     print ("Completed")
 
