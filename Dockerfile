@@ -17,4 +17,4 @@ RUN pip install boto3 awscli
 COPY run.py /run.py
 COPY common_utils /common_utils
 
-ENTRYPOINT ["python", "run.py"]
+ENTRYPOINT ["python","-u", "run.py"]
