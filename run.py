@@ -89,6 +89,7 @@ def main():
 
     # Declare expected disk usage, triggers host's EBS script (ecs-ebs-manager)
     with open("/TOTAL_SIZE", "w") as text_file:
+       total_size = int(total_size * 0.1) # reduction
        text_file.write("{0}".format(total_size))
 
     # Wait for EBS to appear
