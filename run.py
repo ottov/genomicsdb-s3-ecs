@@ -103,8 +103,8 @@ def main():
         print('EBS found')
     else:
         if not os.path.exists(WORKDIR):
-        os.mkdir(WORKDIR)
-       
+            os.mkdir(WORKDIR)
+
     if not os.path.exists(PVCFDIR):
        os.mkdir(PVCFDIR)
 
