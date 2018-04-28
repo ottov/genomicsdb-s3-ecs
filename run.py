@@ -59,7 +59,7 @@ def main():
         time.sleep(9999)
 
     if args.index == None:
-      idx = os.getenv('AWS_BATCH_JOB_ARRAY_INDEX')
+      idx = int(os.getenv('AWS_BATCH_JOB_ARRAY_INDEX'))
     else:
       idx = args.index
 
