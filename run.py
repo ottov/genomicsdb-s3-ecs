@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 
 from common_utils.s3_utils import download_file,upload_folder,get_size,get_aws_session
 
-WORKDIR = '/scratch'
+WORKDIR = '.'
 PVCFDIR = WORKDIR + '/pVCF_genomicsDB'
 
 def fixResolv():
@@ -39,8 +39,76 @@ def run_vcf2tiledb_basic(idx, loader_path):
     print('Running cmd:= ', end='')
     print(cmd)
 
-    return subprocess.check_call(shlex.split(cmd))
+    try:
+        subprocess.check_call(shlex.split(cmd))
+        return True
+    except subprocess.CalledProcessError, e:
+        if e.returncode == -11:
+            # Possible connection issue
+            print("ReturnCode -11")
+            return False
+        else:
+            raise
 
+def run_vcf2tiledb_no_s3(idx, loader_path, callset_path, vid_path):
+    """
+    fallback to downloading each file. This method uses
+    tabix to read the intervals from each file and save interval vcf
+    as a local file.
+    """
+    print("Performing fallback")
+
+    # find offset for this chr
+    chr = os.getenv('CHR')
+
+    with open(vid_path) as vid_file:
+        hg = json.load(vid_file)
+
+    offset = hg['contigs'][chr]['tiledb_column_offset']
+
+    # extract start/end for this partition
+    with open(loader_path) as loader_file:
+        ldr = json.load(loader_file)
+
+    start = ldr['column_partitions'][idx]['begin'] - offset
+    end   = ldr['column_partitions'][idx]['end']   - offset
+    del ldr
+
+    pos = "%s:%s-%s" % (chr, start, end)
+
+    # Download interval files to workdir
+    with open(callset_path) as callset_fp:
+        fList = json.load(callset_fp)
+        fListNew = fList
+
+    for SM in fList['callsets']:
+        #download_file(fList['callsets'][SM]['filename'], WORKDIR)
+        s3path = fList['callsets'][SM]['filename']
+        fName = os.path.basename(s3path)
+        cmd = 'tabix -h %s %s | bgzip > %s/%s' % (s3path, pos, WORKDIR, fName)
+        print (cmd)
+        subprocess.check_call(cmd, shell=True)
+
+        # Build index for this new file
+        cmd = 'tabix -f %s/%s' % (WORKDIR, fName)
+        subprocess.check_call(shlex.split(cmd))
+
+        #record new callset location
+        fListNew['callsets'][SM]['filename'] = WORKDIR + '/' + fName
+
+    # Re-write callsets to local file
+    with open(callset_path, 'w') as callset_fp:
+        json.dump(obj=dict(
+                        fListNew
+                      ),
+                  indent=2,
+                  separators=(',', ': '), fp=callset_fp)
+
+    # Run cmd
+    cmd = 'vcf2tiledb -r%d %s' % (idx, loader_path)
+
+    print('Running cmd:= ', end='')
+    print(cmd)
 
 def main():
     argparser = ArgumentParser()
@@ -109,9 +177,8 @@ def main():
        os.mkdir(PVCFDIR)
 
     print ("Running vcf2tiledb_basic")
-    local_stats_path = run_vcf2tiledb_basic(
-                           idx,
-                           loader_path)
+    if not run_vcf2tiledb_basic(idx, loader_path):
+        run_vcf2tiledb_no_s3(idx, loader_path, callset_path, vid_path)
 
     print("Uploading to %s" % (args.results_s3_path) )
     upload_folder(args.results_s3_path, PVCFDIR)

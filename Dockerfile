@@ -16,5 +16,7 @@ RUN pip install boto3 awscli
 
 COPY run.py /run.py
 COPY common_utils /common_utils
+COPY tabix /usr/local/bin/
+COPY bgzip /usr/local/bin/
 
 ENTRYPOINT ["python","-u", "run.py"]
