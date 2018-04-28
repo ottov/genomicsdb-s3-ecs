@@ -13,6 +13,7 @@ from common_utils.s3_utils import download_file,upload_folder,get_size,get_aws_s
 
 WORKDIR = '/scratch'
 PVCFDIR = WORKDIR + '/pVCF_genomicsDB'
+GETEBS = 0
 
 def fixResolv():
     """
@@ -75,33 +76,36 @@ def main():
     vid_path = download_file(args.vid_s3_path, '/')
     print("VID downloaded to %s" % vid_path)
 
+    if GETEBS:
+        # Calculate required result output based on input files in callset.json
+        total_size = 0
+        with open(callset_path, "r") as text_file:
+        callset_array = json.load(text_file)
 
-    # Calculate required result output based on input files in callset.json
-    total_size = 0
-    with open(callset_path, "r") as text_file:
-       callset_array = json.load(text_file)
+        for sample, value in callset_array['callsets'].items():
+            total_size += get_size(value['filename'])
 
-    for sample, value in callset_array['callsets'].items():
-        total_size += get_size(value['filename'])
+        print("Total Size := {0}".format(total_size) )
+        del callset_array
 
-    print("Total Size := {0}".format(total_size) )
-    del callset_array
+        # Declare expected disk usage, triggers host's EBS script (ecs-ebs-manager)
+        with open("/TOTAL_SIZE", "w") as text_file:
+        text_file.write("{0}".format(total_size))
 
-    # Declare expected disk usage, triggers host's EBS script (ecs-ebs-manager)
-    with open("/TOTAL_SIZE", "w") as text_file:
-       total_size = int(total_size * 0.1) # reduction
-       text_file.write("{0}".format(total_size))
+        # Wait for EBS to appear
+        print('Wait EBS')
+        while not os.path.isdir(WORKDIR):
+        time.sleep(5)
 
-    # Wait for EBS to appear
-    print('Wait EBS')
-    while not os.path.isdir(WORKDIR):
-       time.sleep(5)
+        # Wait for mount verification
+        while not os.path.ismount(WORKDIR):
+        time.sleep(1)
 
-    # Wait for mount verification
-    while not os.path.ismount(WORKDIR):
-       time.sleep(1)
-
-    print('EBS found')
+        print('EBS found')
+    else:
+        if not os.path.exists(WORKDIR):
+        os.mkdir(WORKDIR)
+       
     if not os.path.exists(PVCFDIR):
        os.mkdir(PVCFDIR)
 
