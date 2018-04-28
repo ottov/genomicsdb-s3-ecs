@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7 -u
+#!/usr/bin/env python2.7
 from __future__ import print_function
 
 import os
@@ -50,13 +50,18 @@ def main():
     file_path_group.add_argument('--callset_s3_path', type=str, help='callset.json s3 path', required=True)
     file_path_group.add_argument('--results_s3_path', type=str, help='results s3 path', required=True)
     file_path_group.add_argument('--vid_s3_path', type=str, help='VID s3 path', required=True)
-    file_path_group.add_argument('--index', type=int, help='index in loader', required=True)
+    file_path_group.add_argument('--index', type=int, help='index in loader', required=False)
 
     args = argparser.parse_args()
     print(args)
     if os.getenv('DEBUG'):
         print('Entering sleep')
         time.sleep(9999)
+
+    if args.index == None:
+      idx = os.getenv('AWS_BATCH_JOB_ARRAY_INDEX')
+    else:
+      idx = args.index
 
     print("Downloading loader file")
     loader_path = download_file(args.loader_s3_path, '/')
@@ -87,6 +92,7 @@ def main():
        text_file.write("{0}".format(total_size))
 
     # Wait for EBS to appear
+    print('Wait EBS')
     while not os.path.isdir(WORKDIR):
        time.sleep(5)
 
@@ -94,12 +100,13 @@ def main():
     while not os.path.ismount(WORKDIR):
        time.sleep(1)
 
+    print('EBS found')
     if not os.path.exists(PVCFDIR):
        os.mkdir(PVCFDIR)
 
     print ("Running vcf2tiledb_basic")
     local_stats_path = run_vcf2tiledb_basic(
-                           args.index,
+                           idx,
                            loader_path)
 
     print("Uploading to %s" % (args.results_s3_path) )
