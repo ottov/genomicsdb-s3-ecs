@@ -9,6 +9,8 @@ ENV TERM dumb
 RUN apt update
 RUN apt upgrade -y
 RUN apt install -y python-pip
+RUN apt remove -y --purge g++-5
+RUN apt -y autoremove
 
 RUN rm -rf /var/lib/apt/lists/*
 
