@@ -41,9 +41,11 @@ def download_required_files(loader_s3_path, callset_s3_path, vid_s3_path):
     vid_path = download_file(vid_s3_path, '/')
     print("VID downloaded to %s" % vid_path)
 
+    return loader_path, callset_path, vid_path
+
 def main():
     argparser = parse4vcf2tiledb()
-    args, exra = argparser.parse_args()
+    args, extr = argparser.parse_known_args()
     print(args)
 
     if args.index == None:
@@ -51,7 +53,7 @@ def main():
     else:
       idx = args.index
 
-    download_required_files(args.loader_s3_path, args.callset_s3_path, args.vid_s3_path)
+    loader_path, callset_path, vid_path = download_required_files(args.loader_s3_path, args.callset_s3_path, args.vid_s3_path)
 
     if os.getenv('GETEBS'):
         ebs_utils.initEBS()

@@ -99,11 +99,13 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
         fListNew['callsets'][SM]['filename'] = workdir + '/' + fName
 
     # Re-write callsets to point to local file
+    print("Updating downloaded callset file")
     with open(callset_path, 'w') as callset_fp:
         json.dump(obj=dict(
                         fListNew
                       ),
                   indent=2,
+                  sort_keys=True,
                   separators=(',', ': '), fp=callset_fp)
 
     # Run cmd
