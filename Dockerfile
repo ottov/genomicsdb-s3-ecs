@@ -16,7 +16,7 @@ RUN rm -rf /var/lib/apt/lists/*
 
 RUN pip install boto3 awscli
 
-COPY run.py /run.py
+COPY ./run-vcf2tiledb.py /run-vcf2tiledb.py
 COPY common_utils /common_utils
 COPY tabix /usr/local/bin/
 COPY bgzip /usr/local/bin/
