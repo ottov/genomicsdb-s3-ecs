@@ -26,9 +26,6 @@ def main():
 
     args = argparser.parse_args()
     print(args)
-    if os.getenv('DEBUG'):
-        print('Entering sleep')
-        time.sleep(9999)
 
     if args.index == None:
       idx = int(os.getenv('AWS_BATCH_JOB_ARRAY_INDEX'))
@@ -86,8 +83,9 @@ def main():
     # Run program
     run_vcf2tiledb_no_s3(WORKDIR, idx, loader_path, callset_path, vid_path, args.chr)
 
-    print("Uploading to %s" % (args.results_s3_path) )
-    upload_folder(args.results_s3_path, PVCFDIR)
+    if not os.getenv('SKIP_UPLOAD'):
+      print("Uploading to %s" % (args.results_s3_path) )
+      upload_folder(args.results_s3_path, PVCFDIR)
 
     print ("Completed")
 

@@ -21,4 +21,4 @@ COPY common_utils /common_utils
 COPY tabix /usr/local/bin/
 COPY bgzip /usr/local/bin/
 
-ENTRYPOINT ["python","-u", "run.py"]
+ENTRYPOINT ["python","-u", "run-vcf2tiledb.py"]
