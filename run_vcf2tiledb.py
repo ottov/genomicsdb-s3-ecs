@@ -34,7 +34,7 @@ def download_required_files(*args):
     for f in args:
         print("Downloading {}".format(f))
         downloaded_path = download_file(f, '/')
-        print("file downloaded to {}" % (downloaded_path))
+        print("file downloaded to {}".format(downloaded_path))
         fList.append(downloaded_path)
 
     return fList
