@@ -14,7 +14,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --disable-pip-version-check boto3 awscli
 
-COPY ./run_vcf2tiledb.py ./common_utils /
+COPY ./run_vcf2tiledb.py /
+COPY ./common_utils /common_utils
 COPY tabix bgzip /usr/local/bin/
 
 ENTRYPOINT ["python","-u", "run_vcf2tiledb.py"]
