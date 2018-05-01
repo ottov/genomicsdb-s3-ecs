@@ -91,6 +91,9 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
         #print(cmd)
         subprocess.check_call(cmd, shell=True)
 
+        # remove side-downloaded tbi
+        subprocess.check_call('rm -f /%s.tbi' % (fName) ,shell=True)
+
         # Build index for this new file
         cmd = 'tabix -C %s/%s' % (workdir, fName)
         subprocess.check_call(shlex.split(cmd))

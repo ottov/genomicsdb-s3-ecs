@@ -28,20 +28,16 @@ def parse4vcf2tiledb(argparser = ArgumentParser()):
 
     return argparser
 
-def download_required_files(loader_s3_path, callset_s3_path, vid_s3_path):
-    print("Downloading loader file")
-    loader_path = download_file(loader_s3_path, '/')
-    print("loader file downloaded to %s" % loader_path)
+def download_required_files(*args):
 
-    print("Downloading callset file")
-    callset_path = download_file(callset_s3_path, '/')
-    print("callset downloaded to %s" % callset_path)
+    fList = []
+    for f in args:
+        print("Downloading {}".format(f))
+        downloaded_path = download_file(f, '/')
+        print("file downloaded to {}" % downloaded_path)
+        fList.append(downloaded_path)
 
-    print("Downloading VID file")
-    vid_path = download_file(vid_s3_path, '/')
-    print("VID downloaded to %s" % vid_path)
-
-    return loader_path, callset_path, vid_path
+    return fList
 
 def main():
     argparser = parse4vcf2tiledb()
