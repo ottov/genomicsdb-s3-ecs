@@ -8,8 +8,8 @@ LABEL Description="GenomicsDB with S3, built for AWS ECS, based on Ubuntu 16.04 
 ENV TERM dumb
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y python-pip && \
-    apt-get remove -y --purge g++-5 && \
+    apt-get install -y python-pip libgomp1 && \
+    apt-get remove -y --purge gcc-5 g++-5 libpython2.7-dev libicu55 libpython2.7-dev libssl-dev libc6-dev && \
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --disable-pip-version-check boto3 awscli
