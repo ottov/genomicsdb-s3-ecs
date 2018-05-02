@@ -3,7 +3,7 @@ import json
 import time
 from common_utils.s3_utils import get_size
 
-def initEBS():
+def initEBS(WORKDIR):
     if os.getenv('EBSSIZE'):
         total_size = int(os.getenv('EBSSIZE')) * 1024**3 # EBS SIZE is in GB
     else:
