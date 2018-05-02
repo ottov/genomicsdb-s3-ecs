@@ -7,7 +7,7 @@ import json
 from argparse import ArgumentParser
 from common_utils.genomicsdb import run_vcf2tiledb_no_s3
 from common_utils.s3_utils import download_file,upload_folder
-import common_utils.ebs_utils
+from common_utils.ebs_utils import initEBS
 
 WORKDIR = '/scratch'
 PVCFDIR = WORKDIR + '/pVCF_genomicsDB'
@@ -52,7 +52,7 @@ def main():
     loader_path, callset_path, vid_path = download_required_files(args.loader_s3_path, args.callset_s3_path, args.vid_s3_path)
 
     if os.getenv('GETEBS'):
-        ebs_utils.initEBS()
+        initEBS()
     else:
         if not os.path.exists(WORKDIR):
             os.mkdir(WORKDIR)
@@ -67,7 +67,7 @@ def main():
       print("Uploading to %s" % (args.results_s3_path) )
       upload_folder(args.results_s3_path, PVCFDIR)
 
-    print ("Completed")
+    print ("Completed vcf2tiledb")
 
 
 if __name__ == '__main__':
