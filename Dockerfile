@@ -9,7 +9,7 @@ ENV TERM dumb
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y python-pip libgomp1 && \
-    apt-get remove -y --purge gcc g++ libpython2.7-dev libpython2.7-dev libc6-dev && \
+    apt-get remove -y --purge gcc g++ libpython2.7-dev libc6-dev && \
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/* && \
     pip install --disable-pip-version-check boto3 awscli

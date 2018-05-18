@@ -66,6 +66,10 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
 
     offset = hg['contigs'][contig]['tiledb_column_offset']
 
+    # edit loader file to point to correct callset filename
+    srchStr = subprocess.check_output('grep -Po "/callset.+.json" %s' % (loader_path), shell=True)
+    subprocess.check_call('sed -i "s|%s|%s|" %s' % (srchStr.rstrip(), callset_path, loader_path), shell=True)
+
     # extract start/end for this partition
     with open(loader_path) as loader_file:
         ldr = json.load(loader_file)
@@ -73,6 +77,8 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
     start = ldr['column_partitions'][idx]['begin'] - offset - 1
     end   = ldr['column_partitions'][idx]['end']   - offset + 1
     del ldr
+
+    if start < 0: start = 0
 
     pos = "%s:%s-%s" % (contig, start, end) # tabix region
 
@@ -87,15 +93,17 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
         #download_file(fList['callsets'][SM]['filename'], workdir)
         s3path = fList['callsets'][SM]['filename']
         fName = os.path.basename(s3path)
-        cmd = 'tabix -h %s %s | bgzip > %s/%s' % (s3path, pos, workdir, fName)
-        #print(cmd)
-        subprocess.check_call(cmd, shell=True)
+        gzFile = '%s/%s' % (workdir, fName)
+        while not os.path.exists(gzFile) or os.stat(gzFile).st_size < 29:
+          cmd = 'tabix -h %s %s | bgzip > %s' % (s3path, pos, gzFile)
+          subprocess.check_call(cmd, shell=True)
+
 
         # remove side-downloaded tbi
         subprocess.check_call('rm -f /%s.tbi' % (fName) ,shell=True)
 
         # Build index for this new file
-        cmd = 'tabix -C %s/%s' % (workdir, fName)
+        cmd = 'tabix -f -C %s/%s' % (workdir, fName)
         subprocess.check_call(shlex.split(cmd))
 
         #record new callset location
