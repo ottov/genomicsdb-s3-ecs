@@ -3,6 +3,7 @@ import os
 import subprocess
 import shlex
 import boto3
+import botocore.exceptions
 
 s3 = boto3.resource('s3')
 
@@ -85,3 +86,16 @@ def get_size(s3_path):
 def get_aws_session():
     session = boto3.Session()
     return session.get_credentials()
+
+def file_exists(s3_path):
+    """
+    """
+    bucket = s3_path.split('/')[2]
+    key = '/'.join(s3_path.split('/')[3:])
+
+    object_name = key.split('/')[-1]
+    try:
+       s3.Object(bucket, key).content_length
+       return True
+    except botocore.exceptions.ClientError:
+       return False
