@@ -4,7 +4,7 @@ import json
 import shlex
 import socket
 import subprocess
-from common_utils.s3_utils import download_file,get_aws_session
+from common_utils.s3_utils import download_file,get_aws_session,file_exists
 
 def fixResolv():
     """
@@ -130,3 +130,12 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
     cmd = 'rm -f %s/*.g.vcf.gz*' % (workdir)
     subprocess.check_call(cmd, shell=True)
     return True
+
+def checkUploadExists(loader_path, idx, results_path):
+    with open(loader_path) as loader_file:
+        ldr = json.load(loader_file)
+
+    localFileName = ldr['column_partitions'][idx]['vcf_output_filename']
+    uploadFileName = os.path.basename(localFileName)
+    return file_exists(results_path.rstrip('/') + '/' + uploadFileName.lstrip('/'))
+

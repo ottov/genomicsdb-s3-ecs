@@ -95,7 +95,7 @@ def file_exists(s3_path):
 
     object_name = key.split('/')[-1]
     try:
-       s3.Object(bucket, key).content_length
+       l = s3.Object(bucket, key).content_length
        return True
     except botocore.exceptions.ClientError:
        return False
