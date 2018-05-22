@@ -51,9 +51,6 @@ def main():
 
     loader_path, callset_path, vid_path = download_required_files(args.loader_s3_path, args.callset_s3_path, args.vid_s3_path)
 
-    if checkUploadExists(loader_path, idx, args.results_s3_path):
-       return
-
     if os.getenv('GETEBS'):
         initEBS(WORKDIR)
     else:
