@@ -94,9 +94,18 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
         s3path = fList['callsets'][SM]['filename']
         fName = os.path.basename(s3path)
         gzFile = '%s/%s' % (workdir, fName)
+
+        retries = 0
         while not os.path.exists(gzFile) or os.stat(gzFile).st_size < 29:
+          if retries > 0: print("Retrying download for {}".format(fName))
+
           cmd = 'tabix -h %s %s | bgzip > %s' % (s3path, pos, gzFile)
           subprocess.check_call(cmd, shell=True)
+          retries += 1
+          if retries > 3:
+              print('Downloading entire file')
+              download_file(s3path, workdir)
+              break
 
 
         # remove side-downloaded tbi

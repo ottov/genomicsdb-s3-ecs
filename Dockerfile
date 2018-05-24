@@ -5,7 +5,6 @@ LABEL Description="GenomicsDB with S3, built for AWS ECS, based on Ubuntu 16.04 
         Version="1.0"
 
 # update OS
-ENV TERM dumb
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y python-pip libgomp1 && \
