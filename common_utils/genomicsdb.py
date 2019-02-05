@@ -18,7 +18,8 @@ def exportSession():
         cred = get_aws_session()
         os.environ['AWS_ACCESS_KEY_ID'] = cred.access_key
         os.environ['AWS_SECRET_ACCESS_KEY'] = cred.secret_key
-        os.environ['AWS_SESSION_TOKEN'] = cred.token
+        if cred.token:
+           os.environ['AWS_SESSION_TOKEN'] = cred.token
 
         fixResolv()
 
