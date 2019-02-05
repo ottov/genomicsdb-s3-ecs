@@ -135,9 +135,11 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
     print(cmd)
     subprocess.check_call(shlex.split(cmd))
 
-    print("Cleanup interval files")
-    cmd = 'rm -f %s/*.g.vcf.gz*' % (workdir)
+    print("Cleaning up interval files")
+
+    cmd = 'find %s/ -name "*.g.vcf.gz*" -delete' % (workdir)
     subprocess.check_call(cmd, shell=True)
+
     return True
 
 def checkUploadExists(loader_path, idx, results_path):
