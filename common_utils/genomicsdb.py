@@ -138,7 +138,7 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
 
     print("Cleaning up interval files")
 
-    cmd = 'find %s/ -name "*.g.vcf.gz*" -delete' % (workdir)
+    cmd = 'find %s/ -maxdepth 1 -name "*.g.vcf.gz*" -delete' % (workdir)
     subprocess.check_call(cmd, shell=True)
 
     return True
