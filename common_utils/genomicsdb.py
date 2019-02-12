@@ -100,13 +100,16 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
         while not os.path.exists(gzFile) or os.stat(gzFile).st_size < 29:
           if retries > 0: print("Retrying download for {}".format(fName))
 
-          cmd = 'tabix -h %s %s | bgzip > %s' % (s3path, pos, gzFile)
-          subprocess.check_call(cmd, shell=True)
-          retries += 1
-          if retries > 3:
-              print('Downloading entire file')
-              download_file(s3path, workdir)
-              break
+          cmd = 'timeout 10 tabix -h %s %s | bgzip > %s' % (s3path, pos, gzFile)
+
+          try:
+             subprocess.check_call(cmd, shell=True)
+          except subprocess.CalledProcessError, e:
+             retries += 1
+             if retries > 3:
+                 print('Downloading entire file')
+                 download_file(s3path, workdir)
+                 break
 
 
         # remove side-downloaded tbi
