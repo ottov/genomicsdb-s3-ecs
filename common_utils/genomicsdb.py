@@ -97,14 +97,17 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
         gzFile = '%s/%s' % (workdir, fName)
 
         retries = 0
-        while not os.path.exists(gzFile) or os.stat(gzFile).st_size < 29:
+        status = -1
+        while status != 0 and not os.path.exists(gzFile):
           if retries > 0: print("Retrying download for {}".format(fName))
 
           cmd = 'timeout 10 tabix -h %s %s | bgzip > %s' % (s3path, pos, gzFile)
 
           try:
              subprocess.check_call(cmd, shell=True)
-          except subprocess.CalledProcessError, e:
+             status = 0
+          except subprocess.CalledProcessError as e:
+             status = e.returncode
              retries += 1
              if retries > 3:
                  print('Downloading entire file')
