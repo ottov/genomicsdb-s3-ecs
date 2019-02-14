@@ -98,10 +98,10 @@ def run_vcf2tiledb_no_s3(workdir,idx, loader_path, callset_path, vid_path, conti
 
         retries = 0
         status = -1
-        while status != 0 and not os.path.exists(gzFile):
+        while (status != 0 and not os.path.exists(gzFile)) or os.stat(gzFile).st_size < 29:
           if retries > 0: print("Retrying download for {}".format(fName))
 
-          cmd = 'timeout 60 tabix -h %s %s | bgzip > %s' % (s3path, pos, gzFile)
+          cmd = "/bin/bash -o pipefail -c 'timeout 30 tabix -h %s %s | bgzip > %s'" % (s3path, pos, gzFile)
 
           try:
              subprocess.check_call(cmd, shell=True)
